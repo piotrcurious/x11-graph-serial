@@ -350,6 +350,16 @@ int read_data_point(DataPoint *data_point) {
 
     }
 
+    // Check if the line buffer is empty
+     if (index == 0 ) {
+         return 0 ; 
+     }
+    
+    // Check if the line buffer has a trailing CR character and remove it 
+     if (line [index - 1] == '\r') {
+         index--; 
+     }
+    
     // Terminate the buffer with a null character
 
     line[index] = '\0';
@@ -357,8 +367,6 @@ int read_data_point(DataPoint *data_point) {
     // Parse the buffer as a comma-separated list of values
 
     char *token = strtok(line, ",");
-
-    
 
     // The first token should be the timestamp in milliseconds
 
