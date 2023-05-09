@@ -10,7 +10,7 @@
 
 #define NUM_FIELDS 4
 
-#define PINS {A0, A1, A2, A3}
+const uint8_t PINS[4] {A0, A1, A2, A3};
 
 // Define the baud rate for the serial communication
 
