@@ -366,11 +366,7 @@ void update_data_fields(int *values) {
 
       } 
 
-      if(max_timestamp==-1||timestamp
-
-
-
->max_timestamp){ 
+      if(max_timestamp==-1||timestamp>max_timestamp){ 
 
          max_timestamp=timestamp; 
 
