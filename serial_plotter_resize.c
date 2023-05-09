@@ -33,6 +33,7 @@ typedef struct {
 } DataPoint;
 
 #define MAX_DATA_POINTS 1024 // Maximum number of data points to store 
+#define DISCARD_DATA_POINTS 10 // amount of data points to discard to synchronize with source
 
 // A structure to store the graph parameters
 typedef struct {
@@ -419,16 +420,27 @@ int main(int argc, char **argv) {
     sprintf(title, "Real-time rolling graph from %s", device);
     init_x11(title);
 
+DataPoint data_point;
+
     // Initialize the serial port with the device name and a baud rate of 9600
     init_serial(device, B9600);
     // Initialize the number of data fields in the graph
     graph.num_fields = num_fields;
     // Initialize the buffer size to zero
     buffer_size = 0;
+
+        int i=0;
+	while (i < DISCARD_DATA_POINTS) {
+	int result = read_data_point(&data_point);
+	if (result == 1) {
+	 i++;
+ 	 }
+      }
+
+
     // Loop until the user presses a key
     while (1) {
         // Read a data point from the serial port
-        DataPoint data_point;
         int result = read_data_point(&data_point);
         // Check the result of reading
 
