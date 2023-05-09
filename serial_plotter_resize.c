@@ -528,40 +528,20 @@ void draw_graph() {
 
     // Clear the window with white color
 
-    XSetForeground(display, gc,
-
-                   pixels[COLOR_WHITE]);
+    XSetForeground(display, gc, pixels[COLOR_WHITE]);
 
     
 
-    XFillRectangle(display, window, gc,
-
-                   0, 0,
-
-                   graph.width, graph.height);
+    XFillRectangle(display, window, gc, 0, 0, graph.width, graph.height);
 
     // Draw the x-axis and y-axis with black color
 
-    XSetForeground(display, gc,
-
-                   pixels[COLOR_BLACK]);
+    XSetForeground(display, gc, pixels[COLOR_BLACK]);
 
     
-.
-    XDrawLine(display, window, gc,
+    XDrawLine(display, window, gc, MARGIN, MARGIN, MARGIN, graph.height - MARGIN);
 
-              MARGIN, MARGIN,
-
-              MARGIN, graph.height - MARGIN);
-
-    
-
-    XDrawLine(display, window, gc,
-
-              MARGIN, graph.height - MARGIN,
-
-              graph.width - MARGIN, graph.height - MARGIN);
-
+    XDrawLine(display, window, gc, MARGIN, graph.height - MARGIN, graph.width - MARGIN, graph.height - MARGIN);
 
     // Draw the x-axis and y-axis labels with black color
 
@@ -569,41 +549,19 @@ void draw_graph() {
 
     sprintf(label, "%ld ms", graph.min_timestamp);
 
-    XDrawString(display, window, gc,
-
-                MARGIN, graph.height - MARGIN + 20,
-
-                label, strlen(label));
-
-    
+    XDrawString(display, window, gc, MARGIN, graph.height - MARGIN + 20, label, strlen(label));
 
     sprintf(label, "%ld ms", graph.max_timestamp);
 
-    XDrawString(display, window, gc,
-
-                graph.width - MARGIN - 40, graph.height - MARGIN + 20,
-
-                label, strlen(label));
-
-    
+    XDrawString(display, window, gc, graph.width - MARGIN - 40, graph.height - MARGIN + 20, label, strlen(label));
 
     sprintf(label, "%.2f", graph.min_value);
 
-    XDrawString(display, window, gc,
-
-                MARGIN - 40, graph.height - MARGIN + 5,
-
-                label, strlen(label));
-
+    XDrawString(display, window, gc, MARGIN - 40, graph.height - MARGIN + 5, label, strlen(label));
     
-
     sprintf(label, "%.2f", graph.max_value);
 
-    XDrawString(display, window, gc,
-
-                MARGIN - 40, MARGIN + 5,
-
-                label, strlen(label));
+    XDrawString(display, window, gc, MARGIN - 40, MARGIN + 5, label, strlen(label));
 
     // Draw the data points and lines with different colors for each data field
 
@@ -611,9 +569,7 @@ void draw_graph() {
 
         // Set the foreground color to the corresponding color for the data field
 
-        XSetForeground(display, gc,
-
-                       pixels[graph.colors[i]]);
+        XSetForeground(display, gc, pixels[graph.colors[i]]);
 
         // Loop through the buffer and draw the data points and lines
 
