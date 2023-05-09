@@ -1,0 +1,75 @@
+To use Linux pthread to set up frequency of thread calls and priority, you need to use the function **pthread_setschedprio**¹²⁴, which sets the scheduling priority of a thread to the value specified in **prio**. The value of **prio** depends on the scheduling policy of the thread, which can be obtained by **pthread_getschedparam**¹. The range of valid values for **prio** can be obtained by **sched_get_priority_min** and **sched_get_priority_max**¹. The higher the value of **prio**, the higher the priority of the thread.
+
+Here is an example code snippet that sets the priority of the current thread to the maximum value for its scheduling policy:
+
+```c
+
+#include <pthread.h>
+
+#include <stdio.h>
+
+#include <stdlib.h>
+
+int main() {
+
+  pthread_t thId = pthread_self(); // get current thread ID
+
+  int policy; // variable to store scheduling policy
+
+  struct sched_param param; // variable to store scheduling parameters
+
+  int max_prio; // variable to store maximum priority
+
+  // get current scheduling policy and parameters
+
+  if (pthread_getschedparam(thId, &policy, &param) != 0) {
+
+    perror("pthread_getschedparam");
+
+    exit(EXIT_FAILURE);
+
+  }
+
+  // get maximum priority for current policy
+
+  max_prio = sched_get_priority_max(policy);
+
+  if (max_prio == -1) {
+
+    perror("sched_get_priority_max");
+
+    exit(EXIT_FAILURE);
+
+  }
+
+  // set priority to maximum
+
+  param.sched_priority = max_prio;
+
+  if (pthread_setschedprio(thId, param.sched_priority) != 0) {
+
+    perror("pthread_setschedprio");
+
+    exit(EXIT_FAILURE);
+
+  }
+
+  // print current priority
+
+  printf("Current priority: %d\n", param.sched_priority);
+
+  return 0;
+
+}
+
+```
+
+Source: Conversation with Bing, 5/10/2023
+
+(1) pthread_setschedprio(3) - Linux manual page - Michael Kerrisk. https://man7.org/linux/man-pages/man3/pthread_setschedprio.3.html.
+
+(2) C linux pthread thread priority - Stack Overflow. https://stackoverflow.com/questions/5374902/c-linux-pthread-thread-priority.
+
+(3) Equivalent of SetThreadPriority on Linux (pthreads). https://stackoverflow.com/questions/10876342/equivalent-of-setthreadpriority-on-linux-pthreads.
+
+(4) c - Custom priority value: is a pthread high sched prio positive or .... https://unix.stackexchange.com/questions/433365/custom-priority-value-is-a-pthread-high-sched-prio-positive-or-negative.
