@@ -205,7 +205,14 @@ void init_x11(char *title) {
     XSelectInput(display, window,
 
                  ExposureMask | KeyPressMask | StructureNotifyMask);
-
+    // Create a graphics context with some attributes
+    XGCValues values; // Create a XGCValues structure
+    values.foreground = pixels[COLOR_BLACK]; // Set the foreground color to black
+    values.background = pixels[COLOR_WHITE]; // Set the background color to white
+    gc = XCreateGC(display, window,
+                   GCForeground | GCBackground, // Specify which attributes are set
+                   &values); // Pass the pointer to the XGCValues structure    
+    
     // Create a graphics context with some attributes
 
     gc = XCreateGC(display, window,
