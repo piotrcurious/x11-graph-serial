@@ -424,9 +424,9 @@ void update_graph() {
 
     // Initialize the graph parameters with some default values
 
-    graph.width = WINDOW_WIDTH;
+    //graph.width = WINDOW_WIDTH;
 
-    graph.height = WINDOW_HEIGHT;
+    //graph.height = WINDOW_HEIGHT;
 
     graph.min_timestamp = 0;
 
