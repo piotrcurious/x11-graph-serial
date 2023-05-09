@@ -2,6 +2,22 @@
 X11 simple plotting tool
 Written by BingAI 
 
+To compile the code, you need to have a C compiler and the X11 development libraries installed on your Linux system. You can use the `gcc` command to compile the code and link it with the X11 library. For example, if you save the code in a file named `graph.c`, you can compile it with this command:
+
+```bash
+
+gcc graph.c -o graph -lX11
+
+```
+
+This will produce an executable file named `graph` that you can run with the serial device name and number of data fields as arguments. For example, if your serial device is `/dev/ttyUSB0` and you have 4 data fields, you can run the program with this command:
+
+```bash
+
+./graph /dev/ttyUSB0 4
+
+```
+
 e explaination of the resize version:
 OK, I'll try to explain the code. Here's a summary of what each function does:
 
