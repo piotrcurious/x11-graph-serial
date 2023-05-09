@@ -26,7 +26,6 @@
 
 #define MAX_DATA_FIELDS 8 // Maximum number of data fields to plot
 
-#define MAX_DATA_POINTS 1000 // Maximum number of data points to store
 
 #define WINDOW_WIDTH 800 // Initial window width
 
@@ -59,6 +58,9 @@ typedef struct {
     float values[MAX_DATA_FIELDS]; // Data values
 
 } DataPoint;
+
+#define MAX_DATA_POINTS 1000 // Maximum number of data points to store 
+
 
 // A structure to store the graph parameters
 
@@ -117,6 +119,10 @@ int buffer_size;
 // A global variable to store the graph parameters
 
 Graph graph;
+
+// a global variable to store keypress event
+Bool keypress = False; 
+
 
 // A function to initialize the X11 display and window
 
@@ -366,7 +372,8 @@ int read_data_point(DataPoint *data_point) {
 
     // Parse the buffer as a comma-separated list of values
 
-    char *token = strtok(line, ",");
+    char *token ;
+    token = strtok(line, ",");
 
     // The first token should be the timestamp in milliseconds
 
@@ -374,29 +381,24 @@ int read_data_point(DataPoint *data_point) {
 
         fprintf(stderr, "Error: Invalid data format\n");
 
-        return -1;
-
+        return 0;
     }
-
     
-
     data_point->timestamp = atol(token);
-
    
-
     // The following tokens should be the data values
+        // Get the next token
+        token = strtok(NULL, ",");
 
     int i = 0;
 
     while (token != NULL && i < MAX_DATA_FIELDS) {
 
         // Convert the token to a float value and store it in the data point
-
         data_point->values[i++] = atof(token);
-
         // Get the next token
-
         token = strtok(NULL, ",");
+
 
     }
 
@@ -406,7 +408,7 @@ int read_data_point(DataPoint *data_point) {
 
         fprintf(stderr, "Error: Invalid data format\n");
 
-        return -1;
+        return 0;
 
     }
 
@@ -639,7 +641,6 @@ void handle_events() {
 
     // Loop until a key press event is received
 
-    while (1) {
 
         // Wait for an event from the X11 server
 
@@ -662,8 +663,8 @@ void handle_events() {
             // If it is a key press event, exit the loop
 
             case KeyPress:
-
-                return;
+		keypress = True;
+                break;
 
             
 
@@ -689,7 +690,7 @@ void handle_events() {
 
         }
 
-    }
+    
 
 }
 
@@ -763,31 +764,28 @@ int main(int argc, char **argv) {
 
             buffer[buffer_size++] = data_point;
 
-            // If the buffer is full, remove the oldest data point from the buffer
+            // If the buffer is full, roll the data in the buffer
 
-            if (buffer_size == MAX_DATA_POINTS) {
-
-                memmove(buffer, buffer + 1, (buffer_size - 1) * sizeof(DataPoint));
-
+            if (buffer_size >= MAX_DATA_POINTS) {
+                memmove(buffer, buffer + sizeof(data_point), (buffer_size - 1) * sizeof(data_point));
                 buffer_size--;
 
             }
 
             // Update the graph parameters based on the buffer
-
+		printf("Test");
             update_graph();
 
             // Draw the graph on the window
 
-            draw_graph();
-
+           draw_graph();
         }
 
         else if (result == 0) {
 
-            // If end of file, break the loop
+            // If no data , check if there are new events
 
-            break;
+            //break;
 
         }
 
@@ -806,8 +804,8 @@ int main(int argc, char **argv) {
             // Handle the event and break the loop if it is a key press event
 
             handle_events();
-
-            break;
+		if (keypress == True){
+            break;}
 
         }
 
