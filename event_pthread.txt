@@ -1,0 +1,103 @@
+Yes, it is possible to run `ev_run` as a separate thread, but you need to be careful about thread safety and communication between threads. According to the documentation¹, you can use one event loop per thread, but you cannot use the same event loop in multiple threads at the same time. You also need to use synchronization mechanisms such as mutexes or atomic operations to protect shared data between threads.
+
+To communicate between threads, you can use the `ev_async` watcher¹, which allows you to send an event from one thread to another by calling `ev_async_send`. The receiving thread will then invoke a callback function when it detects the event. You can also use the `ev_signal` watcher¹ to send signals between threads, but this is less portable and reliable.
+
+Here is an example of using `ev_async` to communicate between two threads²:
+
+```c
+
+#include <stdio.h>
+
+#include <pthread.h>
+
+#include <ev.h>
+
+// global variables
+
+struct ev_loop *loop1; // main loop
+
+struct ev_loop *loop2; // worker loop
+
+ev_async async_watcher; // async watcher
+
+int counter = 0; // shared data
+
+// callback function for async event
+
+void async_cb(EV_P_ ev_async *w, int revents)
+
+{
+
+    printf("Async event received\n");
+
+    printf("Counter = %d\n", counter);
+
+}
+
+// callback function for timer event
+
+void timer_cb(EV_P_ ev_timer *w, int revents)
+
+{
+
+    printf("Timer expired\n");
+
+    counter++; // increment shared data
+
+    ev_async_send(loop2, &async_watcher); // send async event to worker loop
+
+}
+
+// function for worker thread
+
+void *worker(void *arg)
+
+{
+
+    printf("Worker thread started\n");
+
+    loop2 = ev_loop_new(0); // create worker loop
+
+    ev_async_init(&async_watcher, async_cb); // initialize async watcher
+
+    ev_async_start(loop2, &async_watcher); // start async watcher
+
+    ev_loop(loop2, 0); // run worker loop
+
+    return NULL;
+
+}
+
+int main()
+
+{
+
+    pthread_t thread; // worker thread
+
+    loop1 = EV_DEFAULT; // create main loop
+
+    ev_timer timer_watcher; // timer watcher
+
+    ev_timer_init(&timer_watcher, timer_cb, 1., 1.); // initialize timer watcher
+
+    ev_timer_start(loop1, &timer_watcher); // start timer watcher
+
+    pthread_create(&thread, NULL, worker, NULL); // create worker thread
+
+    ev_loop(loop1, 0); // run main loop
+
+    pthread_join(thread, NULL); // wait for worker thread
+
+    return 0;
+
+}
+
+```
+
+Source: Conversation with Bing, 5/11/2023
+
+(1) c++ - using libev with multiple threads - Stack Overflow. https://stackoverflow.com/questions/14621261/using-libev-with-multiple-threads.
+
+(2) c - How to use threads with libev - Stack Overflow. https://stackoverflow.com/questions/65064494/how-to-use-threads-with-libev.
+
+(3) ev(3) - Linux man page - die.net. https://linux.die.net/man/3/ev.
