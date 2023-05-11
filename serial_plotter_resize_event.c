@@ -394,6 +394,7 @@ void handle_events() {
         switch (event.type) {
             // If it is an expose event, redraw the graph
             case Expose:
+                update_graph(); // just in case we were sleeping and data came in asynchronously
                 draw_graph();
                 break;
 
@@ -406,6 +407,7 @@ void handle_events() {
             case ConfigureNotify:
                 graph.width = event.xconfigure.width;
                 graph.height = event.xconfigure.height;
+                update_graph();  // in case data got updated asynchronously
                 draw_graph();
                 break;
 
@@ -470,7 +472,6 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-
     // Initialize the X11 display and window with a title
     char title[64];
     sprintf(title, "Real-time rolling graph from %s", device);
@@ -495,13 +496,13 @@ int main(int argc, char **argv) {
     // start event loop
 //    ev_run(loop, 0);
 
-//        printf("No more data\n");
+        printf("discarding first data points\n");
 
         int i=0;
 	while (i < DISCARD_DATA_POINTS) {
 //	int result = read_data_point(&data_point);
 	while(!new_serial_data){
-        printf("No more data\n");
+//        printf("No more data\n");
 	ev_run(loop,EVRUN_NOWAIT);
 		usleep(1000);
          }
@@ -535,12 +536,13 @@ int main(int argc, char **argv) {
 //		printf("Test");
             update_graph();
             // Draw the graph on the window
+	// TODO: make it being called periodically on Vsync instead all the time
             draw_graph();
         } //if (new_serial_data) {
 
         else if (!new_serial_data) {
             // If no data , check if there are new events
-	usleep(1000); // sleep a little.... 
+	usleep(2000); // sleep a little.... 
 	ev_run(loop,EVRUN_NOWAIT); // poll for new serial data
 
         }
@@ -549,6 +551,9 @@ int main(int argc, char **argv) {
             // If error, exit the program
  //           exit(1);
  //       }
+	usleep(5000); // sleep a little.... 
+//            update_graph();
+//            draw_graph();
 
         // Check if there is an event from the X11 server
         if (XPending(display) > 0) {
