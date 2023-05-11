@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <X11/Xlib.h>
@@ -42,11 +43,11 @@ typedef struct {
 
 // A structure to store the graph parameters
 typedef struct {
-    int width; // Window width
-    int height; // Window height
-    int num_fields; // Number of data fields to plot
-    unsigned long min_timestamp; // Minimum timestamp in the data
-    unsigned long max_timestamp; // Maximum timestamp in the data
+    uint16_t width; // Window width
+    uint16_t height; // Window height
+    uint8_t num_fields; // Number of data fields to plot
+    uint64_t min_timestamp; // Minimum timestamp in the data
+    uint64_t max_timestamp; // Maximum timestamp in the data
     float min_value; // Minimum value in the data
     float max_value; // Maximum value in the data
     int colors[MAX_DATA_FIELDS]; // Colors for each data field
@@ -363,7 +364,7 @@ void draw_graph() {
             // Calculate the x and y coordinates of the data point on the window
 //            unsigned int x = MARGIN + (buffer[j].timestamp - graph.min_timestamp) * (graph.width - 1 * MARGIN) / (graph.max_timestamp - graph.min_timestamp);
 //            unsigned int y = graph.height - MARGIN - (buffer[j].values[i] - graph.min_value) * (graph.height - 1 * MARGIN) / (graph.max_value - graph.min_value);
-            unsigned int x = (buffer[j].timestamp - graph.min_timestamp) * (graph.width) / (graph.max_timestamp - graph.min_timestamp);
+            unsigned int x = ((buffer[j].timestamp - graph.min_timestamp) * ((float) graph.width / (graph.max_timestamp - graph.min_timestamp) ));
             unsigned int y = graph.height - MARGIN - (buffer[j].values[i] - graph.min_value) * (graph.height - 1 * MARGIN) / (graph.max_value - graph.min_value);
             // Draw a small circle around the data point
 #ifdef DATA_POINT_CIRCLE
