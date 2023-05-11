@@ -18,9 +18,7 @@
 #define MAX_DATA_FIELDS 8 // Maximum number of data fields to plot
 #define WINDOW_WIDTH 800 // Initial window width
 #define WINDOW_HEIGHT 600 // Initial window height
-//#define DATA_POINT_CIRCLE // wheter to draw a circle on each data point position (slow)
-#define MARGIN 20 // Margin around the graph
-#define INTERNAL_GRAPH_MARGIN 0.001 // Margin for min/max values
+#define MARGIN 50 // Margin around the graph
 #define COLOR_BLACK 0 // Color index for black
 #define COLOR_RED 1 // Color index for red
 #define COLOR_GREEN 2 // Color index for green
@@ -32,7 +30,7 @@
 
 // A structure to store a data point
 typedef struct {
-    unsigned long timestamp; // Timestamp in milliseconds
+    long timestamp; // Timestamp in milliseconds
     float values[MAX_DATA_FIELDS]; // Data values
 } DataPoint;
 
@@ -45,8 +43,8 @@ typedef struct {
     int width; // Window width
     int height; // Window height
     int num_fields; // Number of data fields to plot
-    unsigned long min_timestamp; // Minimum timestamp in the data
-    unsigned long max_timestamp; // Maximum timestamp in the data
+    long min_timestamp; // Minimum timestamp in the data
+    long max_timestamp; // Maximum timestamp in the data
     float min_value; // Minimum value in the data
     float max_value; // Maximum value in the data
     int colors[MAX_DATA_FIELDS]; // Colors for each data field
@@ -316,7 +314,7 @@ void update_graph() {
 
 
         // Add some margin to the minimum and maximum value
-        float margin = (graph.max_value - graph.min_value) * INTERNAL_GRAPH_MARGIN;
+        float margin = (graph.max_value - graph.min_value) * 0.1;
         graph.min_value -= margin;
         graph.max_value += margin;
 
@@ -341,18 +339,18 @@ void draw_graph() {
     XFillRectangle(display, window, gc, 0, 0, graph.width, graph.height);
     // Draw the x-axis and y-axis with black color
     XSetForeground(display, gc, pixels[COLOR_BLACK]);
-//    XDrawLine(display, window, gc, MARGIN, MARGIN, MARGIN, graph.height - MARGIN);
-//    XDrawLine(display, window, gc, MARGIN, graph.height - MARGIN, graph.width - MARGIN, graph.height - MARGIN);
+    XDrawLine(display, window, gc, MARGIN, MARGIN, MARGIN, graph.height - MARGIN);
+    XDrawLine(display, window, gc, MARGIN, graph.height - MARGIN, graph.width - MARGIN, graph.height - MARGIN);
     // Draw the x-axis and y-axis labels with black color
     char label[32];
     sprintf(label, "%ld ms", graph.min_timestamp);
-    XDrawString(display, window, gc, MARGIN, graph.height - MARGIN + MARGIN/2, label, strlen(label));
+    XDrawString(display, window, gc, MARGIN, graph.height - MARGIN + 20, label, strlen(label));
     sprintf(label, "%ld ms", graph.max_timestamp);
-    XDrawString(display, window, gc, graph.width - MARGIN - 40, graph.height - MARGIN + MARGIN/2, label, strlen(label));
+    XDrawString(display, window, gc, graph.width - MARGIN - 40, graph.height - MARGIN + 20, label, strlen(label));
     sprintf(label, "%.2f", graph.min_value);
-    XDrawString(display, window, gc, MARGIN - MARGIN, graph.height - MARGIN + 0, label, strlen(label));
+    XDrawString(display, window, gc, MARGIN - 40, graph.height - MARGIN + 5, label, strlen(label));
     sprintf(label, "%.2f", graph.max_value);
-    XDrawString(display, window, gc, MARGIN - MARGIN, MARGIN + 0, label, strlen(label));
+    XDrawString(display, window, gc, MARGIN - 40, MARGIN + 5, label, strlen(label));
 
     // Draw the data points and lines with different colors for each data field
     for (int i = 0; i < graph.num_fields; i++) {
@@ -361,24 +359,18 @@ void draw_graph() {
         // Loop through the buffer and draw the data points and lines
         for (int j = 0; j < buffer_size; j++) {
             // Calculate the x and y coordinates of the data point on the window
-//            unsigned int x = MARGIN + (buffer[j].timestamp - graph.min_timestamp) * (graph.width - 1 * MARGIN) / (graph.max_timestamp - graph.min_timestamp);
-//            unsigned int y = graph.height - MARGIN - (buffer[j].values[i] - graph.min_value) * (graph.height - 1 * MARGIN) / (graph.max_value - graph.min_value);
-            unsigned int x = (buffer[j].timestamp - graph.min_timestamp) * (graph.width) / (graph.max_timestamp - graph.min_timestamp);
-            unsigned int y = graph.height - MARGIN - (buffer[j].values[i] - graph.min_value) * (graph.height - 1 * MARGIN) / (graph.max_value - graph.min_value);
+            int x = MARGIN + (buffer[j].timestamp - graph.min_timestamp) * (graph.width - 2 * MARGIN) / (graph.max_timestamp - graph.min_timestamp);
+            int y = graph.height - MARGIN - (buffer[j].values[i] - graph.min_value) * (graph.height - 2 * MARGIN) / (graph.max_value - graph.min_value);
             // Draw a small circle around the data point
-#ifdef DATA_POINT_CIRCLE
             XFillArc(display, window, gc,
                      x - 2, y - 2,
                      4, 4,
                      0, 360 * 64);
-#endif // DATA_POINT_CIRCLE
             // If this is not the first data point in the buffer, draw a line from the previous data point to this one
             if (j > 0) {
                 // Calculate the x and y coordinates of the previous data point on the window
-//                int prev_x = MARGIN + (buffer[j-1].timestamp - graph.min_timestamp) * (graph.width - 1 * MARGIN) / (graph.max_timestamp - graph.min_timestamp);
-//                int prev_y = graph.height - MARGIN - (buffer[j-1].values[i] - graph.min_value) * (graph.height - 1 * MARGIN) / (graph.max_value - graph.min_value);
-                int prev_x = (buffer[j-1].timestamp - graph.min_timestamp) * (graph.width) / (graph.max_timestamp - graph.min_timestamp);
-                int prev_y = graph.height - MARGIN - (buffer[j-1].values[i] - graph.min_value) * (graph.height - 1 * MARGIN) / (graph.max_value - graph.min_value);
+                int prev_x = MARGIN + (buffer[j-1].timestamp - graph.min_timestamp) * (graph.width - 2 * MARGIN) / (graph.max_timestamp - graph.min_timestamp);
+                int prev_y = graph.height - MARGIN - (buffer[j-1].values[i] - graph.min_value) * (graph.height - 2 * MARGIN) / (graph.max_value - graph.min_value);
                 // Draw a line from the previous data point to this one
                 XDrawLine(display, window, gc,
                           prev_x, prev_y,
@@ -533,7 +525,7 @@ int main(int argc, char **argv) {
 		buffer_size++;
 		new_serial_data = False ; // reset new serial data flag
             // If the buffer is full, roll the data in the buffer
-            if (buffer_size >= MAX_DATA_POINTS-2) {
+            if (buffer_size >= MAX_DATA_POINTS-1) {
 //                memcpy(buffer, buffer + sizeof(DataPoint), 8 * sizeof(DataPoint));
 		for (int i=0; i<buffer_size; i++) {
     			buffer[i] = buffer[i+1]; 
