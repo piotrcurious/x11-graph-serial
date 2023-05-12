@@ -1,0 +1,87 @@
+Linux pthreads are a way of creating and managing multiple threads of execution within a single process. Threads share the same address space and resources, but have their own stack, registers, and attributes. To use pthreads, you need to include the header file <pthread.h> and link with the library -lpthread.
+
+To create a thread, you need to define a function that will run in the thread, and pass it to the pthread_create function along with a pointer to some data for the function. For example:
+
+```c
+void *print_message_function(void *ptr); // function prototype
+
+int main()
+{
+    pthread_t thread1, thread2; // thread identifiers
+    const char *message1 = "Thread 1"; // data for the functions
+    const char *message2 = "Thread 2";
+    int iret1, iret2; // return values
+
+    // create threads
+    iret1 = pthread_create(&thread1, NULL, print_message_function, (void*) message1);
+    iret2 = pthread_create(&thread2, NULL, print_message_function, (void*) message2);
+
+    // check for errors
+    if (iret1 || iret2)
+    {
+        fprintf(stderr, "Error - pthread_create() return code: %d\n", iret1 ? iret1 : iret2);
+        exit(EXIT_FAILURE);
+    }
+
+    // wait for threads to finish
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+
+    // print return values
+    printf("Thread 1 returns: %d\n", iret1);
+    printf("Thread 2 returns: %d\n", iret2);
+
+    return 0;
+}
+
+// function to run in each thread
+void *print_message_function(void *ptr)
+{
+    char *message;
+    message = (char *) ptr;
+    printf("%s\n", message);
+}
+```
+
+This code creates two threads that print a message and then exit. The pthread_join function waits for a thread to terminate and returns its exit status. The pthread_create function returns 0 on success or an error code on failure¹.
+
+To end a thread, you can either return from the function that runs in the thread, or call pthread_exit with an exit status. You can also use pthread_cancel to request another thread to terminate, but this is not recommended as it may leave resources in an inconsistent state.
+
+To set the priority and granularity of a thread, you need to use the pthread_attr_t structure and the corresponding functions to initialize and modify it. For example:
+
+```c
+pthread_attr_t attr; // attribute object
+struct sched_param param; // scheduling parameter object
+int policy; // scheduling policy
+
+// initialize attribute object with default values
+pthread_attr_init(&attr);
+
+// get current scheduling policy and parameters
+pthread_attr_getschedpolicy(&attr, &policy);
+pthread_attr_getschedparam(&attr, &param);
+
+// modify policy and parameters as desired
+policy = SCHED_FIFO; // set policy to FIFO
+param.sched_priority = 10; // set priority to 10
+pthread_attr_setschedpolicy(&attr, policy); // set new policy
+pthread_attr_setschedparam(&attr, &param); // set new parameters
+
+// create thread with modified attributes
+pthread_create(&thread1, &attr, print_message_function, (void*) message1);
+
+// destroy attribute object when no longer needed
+pthread_attr_destroy(&attr);
+```
+
+This code sets the scheduling policy of the thread to FIFO (first-in first-out) and the priority to 10. The scheduling policy determines how threads are selected for execution by the kernel. The priority determines the order of execution within a policy. The granularity determines how often threads are switched by the kernel. You can use pthread_attr_setscope to set the granularity to either PTHREAD_SCOPE_SYSTEM (system-wide contention) or PTHREAD_SCOPE_PROCESS (process-wide contention)¹.
+
+For more details and examples on how to use linux pthreads, you can refer to these tutorials:
+
+- Linux Tutorial: POSIX Threads¹
+- Multithreaded Programming (POSIX pthreads Tutorial)³
+
+Source: Conversation with Bing, 5/13/2023
+(1) Linux Tutorial: POSIX Threads. http://www.yolinux.com/TUTORIALS/LinuxTutorialPosixThreads.html.
+(2) Multithreaded Programming (POSIX pthreads Tutorial) - randu.org. https://randu.org/tutorials/threads/.
+(3) Linux Tutorial: POSIX Threads - CMU School of Computer Science. https://www.cs.cmu.edu/afs/cs/academic/class/15492-f07/www/pthreads.html.
