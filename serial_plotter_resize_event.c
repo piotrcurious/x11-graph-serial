@@ -44,6 +44,8 @@ typedef struct {
 #define MAX_DATA_POINTS 2048 // Maximum number of data points to store 
 #define DISCARD_DATA_POINTS 3 // amount of data points to discard to synchronize with source
 #define LINE_SIZE 256 // max line size (line buffer)
+#define SERIAL_DATA_NO_DATA_SLEEP 50 // in udelay(<value>) how long should serial input routine sleep in case data comes slower than we read it
+#define SERIAL_TIMEOUT_FOR_IMPARTIAL_DATA 32768 // uint16_t , how many times we should sleep until giving up and avoiding being stuck in the serial read routine forever
 
 // A structure to store the graph parameters
 typedef struct {
@@ -220,6 +222,10 @@ int read_data_point(DataPoint *data_point) {
     // Initialize a buffer to store the line
     char line[256];
     int index = 0;
+    uint16_t timeout_counter = 0; // initalize timeout counter 
+	// this allows serial read loop to exit when just part of data arrived
+	// otherwise it will loop forever waiting for data. 
+
     // Read characters from the serial port until a newline or end of file is encountered
 //	usleep(10000); // wait for buffer
     while (1) {
@@ -229,7 +235,10 @@ int read_data_point(DataPoint *data_point) {
 
         if (n == 0) { //if no new data
 //            return 0;
-	usleep (50); // wait a little for the buffer to fill up. 
+		usleep (SERIAL_DATA_NO_DATA_SLEEP); // wait a little for the buffer to fill up. 
+		if (timeout_counter++ > SERIAL_TIMEOUT_FOR_IMPARTIAL_DATA) { ; // increment timeout counter
+			break;
+        	}
 	// TODO : implement timeout
         }
 
@@ -244,6 +253,7 @@ int read_data_point(DataPoint *data_point) {
         // Append the character to the buffer
 	if (n == 1 ) { // if there is data
          line[index++] = c;
+	 timeout_counter = 0 ; // reset the timeout counter
 	}
     }
     // Check if the line buffer is empty
