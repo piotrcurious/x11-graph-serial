@@ -17,8 +17,10 @@ This will produce an executable file named `graph` that you can run with the ser
 ./graph 1 /dev/ttyUSB0 4
 
 ```
-Usage: ./graph <color theme number> <serial device> <number of data fields>
-
+Usage : 
+```bash
+./graph <color theme number> <serial device> <number of data fields>
+```
 color theme number 1 means black background. 
 
 for various strategies of binding usb device under static name :
