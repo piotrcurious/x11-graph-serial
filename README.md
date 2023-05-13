@@ -14,11 +14,19 @@ This will produce an executable file named `graph` that you can run with the ser
 
 ```bash
 
-./graph /dev/ttyUSB0 4
+./graph 1 /dev/ttyUSB0 4
 
 ```
+Usage: ./graph <color theme number> <serial device> <number of data fields>
 
-e explaination of the resize version:
+color theme number 1 means black background. 
+
+for various strategies of binding usb device under static name :
+  
+https://unix.stackexchange.com/questions/66901/how-to-bind-usb-device-under-a-static-name
+  
+  
+the  explaination of the resize version:
 OK, I'll try to explain the code. Here's a summary of what each function does:
 
 - The `init_x11` function initializes the X11 display and window with some attributes, such as the size, color, title and events to handle. It also allocates some colors and creates a graphics context for drawing on the window.
@@ -33,7 +41,7 @@ OK, I'll try to explain the code. Here's a summary of what each function does:
 
 - The `update_graph` function updates the graph parameters based on the data buffer. It sets the window size, the number of data fields, the minimum and maximum timestamp and value, and the colors for each data field. It also adds some margin to the minimum and maximum value and handles some edge cases where they are equal.
 
-- The `draw_graph` function draws the graph on the window. It clears the window with white color, draws the x-axis and y-axis with black color and labels them with the minimum and maximum timestamp and value. It then loops through the buffer and draws the data points and lines with different colors for each data field. It also flushes the output buffer to display the graph on the window.
+- The `draw_graph` function draws the graph on the window. It clears the window with white color, draws the x-axis and y-axis with black color and labels them with the minimum and maximum timestamp and value. It then loops through the buffer and draws the data points and lines with different colors for each data field. -It also flushes the output buffer to display the graph on the window.- It does not flush as flushing is done by Xorg on vsync refresh. 
 
 - The `handle_events` function handles the events from the X11 server. It waits for an event and checks its type. If it is an expose event, it redraws the graph. If it is a key press event, it exits the loop. If it is a configure notify event, it updates the window size and redraws the graph. It ignores other types of events.
 
